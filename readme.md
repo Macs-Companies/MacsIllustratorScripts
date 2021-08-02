@@ -2,8 +2,14 @@ Installation
 =============
 
 *STEP 1*
+
+
 Get github Desktop
+
+
 *STEP 2*
+
+
 Clone the github repository
 `BoDaly/MacsIllustratorScripts` to `/Applications/Adobe Illustrator 2021/Presets.localized/en_US/Scripts/`
 
