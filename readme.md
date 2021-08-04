@@ -11,7 +11,7 @@ Get github Desktop
 
 
 Clone the github repository
-`BoDaly/MacsIllustratorScripts` to `/Applications/Adobe Illustrator 2021/Presets.localized/en_US/Scripts/`
+`MacsCompanies/MacsIllustratorScripts` to `/Applications/Adobe Illustrator 2021/Presets.localized/en_US/Scripts/`
 
 Update
 =============
