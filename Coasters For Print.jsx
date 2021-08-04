@@ -12,140 +12,124 @@ while(moreCoasters == true){
 }
 
 function initCoasters () {
-baseFolder = startFolder.selectDlg('Select The Order Number Folder You Want To Process')
-//baseFolder = Folder("D:/Google Drive/Scripting/Accessories/SOCKS/Socks for Print/Sample Folders/312127 Zion Park Gift and Deli")
-assetsFold = Folder(baseFolder+'/_assets')
+  baseFolder = startFolder.selectDlg('Select The Order Number Folder You Want To Process')
+  //baseFolder = Folder("D:/Google Drive/Scripting/Accessories/SOCKS/Socks for Print/Sample Folders/312127 Zion Park Gift and Deli")
+  assetsFold = Folder(baseFolder+'/_assets')
+  qty = prompt('Coaster Quantity',12)
 
 
 
-if(assetsFold.exists == true)
-{
-    artFiles = assetsFold.getFiles(/.ai|.pdf/i)
+  if(assetsFold.exists == true){
+      artFiles = assetsFold.getFiles(/.ai|.pdf/i)
 
-    // putting all art into a back array or front array
-    homeArray =[]
-    carArray = []
-    for(i=0;i<artFiles.length;i++)
-    {
-        af = artFiles[i]
-        disName = getDisplayName(af)
-        if( disName.match('_HOMEC') && af instanceof File){ homeArray.push(af) }
-        if( disName.match('_CARC') && af instanceof File){ carArray.push(af) }
-    }
+      // putting all art into a back array or front array
+      homeArray =[]
+      carArray = []
+      for(i=0;i<artFiles.length;i++){
+          af = artFiles[i]
+          disName = getDisplayName(af)
+          if( disName.match('_HOMEC') && af instanceof File){ homeArray.push(af) }
+          if( disName.match('_CARC') && af instanceof File){ carArray.push(af) }
+      }
 
-    $.writeln('Home Length '+homeArray.length)
-    $.writeln('Car Length '+carArray.length)
-    buildCoasters(homeArray, "home")
-    buildCoasters(carArray, "car")
-}
-
-
-function buildCoasters(coasterArray, type){
-  if(type == "home"){
-    coasterTemplateFile = homeTemplateFile
-  }else if (type == "car") {
-    coasterTemplateFile = carTemplateFile
+      $.writeln('Home Length '+homeArray.length)
+      $.writeln('Car Length '+carArray.length)
+      buildCoasters(homeArray, "home")
+      buildCoasters(carArray, "car")
   }
-          for(i=0;i<coasterArray.length;i++)
-        {
-            artFilecoaster = coasterArray[i]
+  moreCoasters = confirm('more to run?')
 
-            doc = app.open(coasterTemplateFile)
-            app.executeMenuCommand('preview')
 
-            // Collecting all cells and putting them into Front and Back arrays
-            // var frontCells = []
-            var positions = []
-            for(k=0;k<doc.groupItems.length;k++)
+  function buildCoasters(coasterArray, type){
+    if(type == "home"){
+      coasterTemplateFile = homeTemplateFile
+    }else if (type == "car") {
+      coasterTemplateFile = carTemplateFile
+    }
+    while(coasterArray.length > 0){
+
+      ofName = ''
+
+      for(i=0;i<12/qty;i++){
+        artFilecoaster = coasterArray.shift()
+
+        doc = app.open(coasterTemplateFile)
+        app.executeMenuCommand('preview')
+
+        // Collecting all cells and putting them into Front and Back arrays
+        // var frontCells = []
+        var positions = []
+        for(k=0;k<doc.groupItems.length;k++){
+            grp = doc.groupItems[k]
+            if(grp.name.match('Positions'))
             {
-                grp = doc.groupItems[k]
-                if(grp.name.match('Positions'))
+                for(j=0;j<grp.pageItems.length;j++)
                 {
-                    for(j=0;j<grp.pageItems.length;j++)
-                    {
-                        positions.push(grp.pageItems[j])
-                    }
+                    positions.push(grp.pageItems[j])
                 }
             }
+        }
 
 
 
-            // artLayer = doc.layers['Layer 1']
-            // artLayer.locked = false
+        // artLayer = doc.layers['Layer 1']
+        // artLayer.locked = false
 
-            // vis = doc.layers['Visual Fold']
-            // vis.locked = false
+        // vis = doc.layers['Visual Fold']
+        // vis.locked = false
 
-            // bringing art in - rasterize it - copy and match with a cell, repeat copy and match
-            //-------------------------------------------
-            originalcoasterArt = doc.placedItems.add()
-            originalcoasterArt.file = artFilecoaster
-            doc.selection = null
-            originalcoasterArt.selected = true
-            clipBounds = originalcoasterArt.visibleBounds;
-            rasOpts = new RasterizeOptions();
-            rasOpts.resolution = 150
-            doc.rasterize(originalcoasterArt, clipBounds, rasOpts);
-            coasterArt = doc.pageItems[0]
-            //-------------------------------------------
-            // originalFrontArt = doc.placedItems.add()
-            // originalFrontArt.file = artFileFront
+        // bringing art in - rasterize it - copy and match with a cell, repeat copy and match
+        //-------------------------------------------
+        originalcoasterArt = doc.placedItems.add()
+        originalcoasterArt.file = artFilecoaster
+        doc.selection = null
+        originalcoasterArt.selected = true
+        clipBounds = originalcoasterArt.visibleBounds;
+        rasOpts = new RasterizeOptions();
+        rasOpts.resolution = 150
+        doc.rasterize(originalcoasterArt, clipBounds, rasOpts);
+        coasterArt = doc.pageItems[0]
+        doc.selection = null
 
-            baseName = getDisplayName(baseFolder)
-            ofName = getDisplayName(originalcoasterArt.file)
-
-            // details = doc.textFrames[0]
-            // details.contents = baseName.toUpperCase()+' | '+ ofName.split('.')[0].toUpperCase().replace(/ _Car*+/,'')
-            // details.locked = true
-
-            // disName =
-            if(type == "home"){
-              saveFile = new File( baseFolder+'/'+baseName.split(' ')[0] +'--'+ ofName.split('.')[0].toUpperCase().replace(/ _C[a-zA-Z]+([0-9]+)?/,'')+'.pdf' )
-            }else{
-              saveFile = new File( baseFolder+'/'+baseName.split(' ')[0] +'--'+ ofName.split('.')[0].toUpperCase().replace(/ _H[a-zA-Z]+([0-9]+)?/,'')+'.pdf' )
+        for(j=qty*i; j<positions.length;j++){
+            thePosition = positions[j]
+            copArt = coasterArt.duplicate()
+            copArt.position = thePosition.position
+            var adjustX = (copArt.width - thePosition.width)/2
+            var adjustY = (copArt.height - thePosition.height)/2
+            copArt.position = [(copArt.position[0] - adjustX) , (copArt.position[1] + adjustY)]
+            if(type == "car"){
+              resize = (208.8 / copArt.width)*100
+              copArt.resize(resize,resize)
             }
 
-            doc.selection = null
-            // originalFrontArt.selected = true
-            // clipBounds = originalFrontArt.visibleBounds;
-            // rasOpts = new RasterizeOptions();
-            // rasOpts.resolution = 150
-            // doc.rasterize(originalFrontArt, clipBounds, rasOpts);
-            // frontArt = doc.pageItems[0]
-            //-------------------------------------------
+        }
+        // for(j=0; j<frontCells.length;j++)
+        // {
+        //     theCell = frontCells[j]
+        //     copArt = frontArt.duplicate(artLayer, ElementPlacement.PLACEATEND)
+        //     copArt.position = theCell.position
+        // }
 
-            for(j=0; j<positions.length;j++)
-            {
-                thePosition = positions[j]
-                copArt = coasterArt.duplicate()
-                copArt.position = thePosition.position
-                var adjustX = (copArt.width - thePosition.width)/2
-                var adjustY = (copArt.height - thePosition.height)/2
-                copArt.position = [(copArt.position[0] - adjustX) , (copArt.position[1] + adjustY)]
-                if(type == "car"){
-                  resize = (208.8 / copArt.width)*100
-                  copArt.resize(resize,resize)
-                }
-
-            }
-            // for(j=0; j<frontCells.length;j++)
-            // {
-            //     theCell = frontCells[j]
-            //     copArt = frontArt.duplicate(artLayer, ElementPlacement.PLACEATEND)
-            //     copArt.position = theCell.position
-            // }
-
-            // remove original art and save as pdf
-            coasterArt.remove()
-            // frontArt.remove()
-            // vis.locked = true
-
-            pdfSaveOpts = new PDFSaveOptions()
-            doc.saveAs(saveFile, pdfSaveOpts)
-            doc.close()
-        }}
-        moreCoasters = confirm('more to run?')
+        // remove original art and save as pdf
+        ofName = ofName + getDisplayName(originalcoasterArt.file)
+        coasterArt.remove()
+        // frontArt.remove()
+        // vis.locked = true
+      }
+      baseName = getDisplayName(baseFolder)
+      if(type == "home"){
+        saveFile = new File( baseFolder+'/'+baseName.split(' ')[0] +'--'+ ofName.split('.')[0].toUpperCase().replace(/ _C[a-zA-Z]+([0-9]+)?/,'')+'.pdf' )
+      }else{
+        saveFile = new File( baseFolder+'/'+baseName.split(' ')[0] +'--'+ ofName.split('.')[0].toUpperCase().replace(/ _H[a-zA-Z]+([0-9]+)?/,'')+'.pdf' )
+      }
+      pdfSaveOpts = new PDFSaveOptions()
+      doc.saveAs(saveFile, pdfSaveOpts)
+      doc.close()
+    }
+  }
 }
+
 
 function getDisplayName(theObject)
 {
